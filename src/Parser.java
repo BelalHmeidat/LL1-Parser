@@ -15,6 +15,9 @@ public class Parser {
     private Set<String> terminals;
     private String startSymbol;
 
+    private Map<String, Set<String>> firstMap;
+    private Map<String, Set<String>> followMap;
+
     public Parser(){}
 
     /***
@@ -29,7 +32,31 @@ public class Parser {
     private void initialize() {
         this.nonTerminals = extractNonTerminals();
         this.terminals = extractTerminals();
-        this.startSymbol = this.printProductionRules().split("->")[0].trim();
+        this.startSymbol = findFirstSymbol();
+        this.firstMap = new HashMap<>();
+        this.followMap = new HashMap<>();
+        System.out.println("Non Terminals: " + nonTerminals);
+        System.out.println("Terminals: " + terminals);
+        // for (String key : nonTerminals) {
+            int i = 2;
+            String x = nonTerminals.toArray(new String[0])[i];
+            System.out.println(x);
+            Set<String> follows = findFollow(x);
+            for (String s : follows) {
+                System.out.println("Key: " + x + " Follow: " + s);
+                System.out.println("-----------");
+            }
+            // Set<String> firsts = findFirst(key);
+            // for (String s : firsts) {
+            //     System.out.println("Key: " + key + " First: " + s);
+            // }
+        // }
+
+        // String [] temp = findFollow("block");
+        // System.out.println("Follows: ");
+        // for (String s : temp) {
+        //     System.out.println(s);
+        // }
     }
 
     /***
@@ -60,9 +87,6 @@ public class Parser {
                 scanner.close();
             }
             initialize();
-            // System.out.println("Non Terminals: " + nonTerminals);
-            // System.out.println("Terminals: " + terminals);
-            // findFirst("S");
         }
     }
 
@@ -91,54 +115,100 @@ public class Parser {
         System.out.println(sb.toString());
         return sb.toString();
     }
-
-    private String [] findFirst(String keyOrTerminal){
+    private Set<String> findFirst(String keyOrTerminal){
         if (isTerminal(keyOrTerminal)) {
-            return new String[]{keyOrTerminal};
+            return new HashSet<>(Arrays.asList(keyOrTerminal));
         }
-        ArrayList<String> first = new ArrayList<>();
+        //is non terminal
+        Set<String> first = new HashSet<>();
         List<String> productionRuleValue = productionRules.get(keyOrTerminal);
         for (String option : productionRuleValue) {
             String [] parts = option.split(" ");
             if(isTerminal(parts[0])){
                 first.add(parts[0]);
             }
-            else if(isNonTerminal(parts[0])){
-                first = new ArrayList<>(Arrays.asList(findFirst(parts[0])));
-                if (first.contains("lambda")) {
-                    first.remove("lambda");
-                    first.addAll(Arrays.asList(findFirst(parts[1])));
+            else {
+                int i =0;
+                while(i < parts.length){
+                    Set<String> tempFirst = findFirst(parts[i]);
+                    if (tempFirst.contains("lambda")) {
+                        tempFirst.remove("lambda");
+                        first.addAll(tempFirst);
+                        if(parts.length > i+1){
+                            Set<String> tempFirstNext = findFirst(parts[i+1]);
+                            if (tempFirstNext.contains("lambda"))
+                            tempFirstNext.remove("lambda");
+                            first.addAll(tempFirstNext);
+                        }
+                    }
+                    else {
+                        first.addAll(tempFirst);
+                        break;
+                    }
+                    i++;
                 }
             }
         }
-        return first.toArray(new String[0]);
+        if (first.isEmpty()){
+            throw new IllegalArgumentException("First set is empty!");
+        }
+        firstMap.put(keyOrTerminal, first);
+        return first;
     }
 
-    // private String [] findFollow(String targetKey){
-    //     if (targetKey.equals(startSymbol)) {
-    //         return new String[]{"$"};
-    //     }
-    //     for (String key : productionRules.keySet()){
-    //         List<String> productionRuleValue = productionRules.get(key);
-    //         for (String option : productionRuleValue) {
-    //             String [] parts = option.split(" ");
-    //             for (int i = 0; i < parts.length; i++) {
-    //                 if (parts[i].equals(targetKey)){
-    //                     if (i == parts.length - 1) {
-    //                         return findFollow(key);
-    //                     }
-    //                     else {
-    //                         if (isTerminal(parts[i+1])){
-
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    private Set<String> findFollow(String targetKey){
+        Set<String> follow = new HashSet<>();
+        if (targetKey.trim().equals(startSymbol.trim())) {
+            followMap.put(targetKey, new HashSet<>(Arrays.asList("$")));
+            return new HashSet<>(Arrays.asList("$"));
+        }
+        for (String key : productionRules.keySet()){
+            List<String> productionRuleValue = productionRules.get(key);
+            for (String option : productionRuleValue) {
+                String [] parts = option.split(" ");
+                for (int i = 0; i < parts.length; i++) {
+                    if (parts[i].equals(targetKey)){
+                        if (i == parts.length - 1) {
+                            if (!key.equals(targetKey)) {
+                                follow.addAll(findFollow(key));
+                            }
+                        }
+                        else if (isTerminal(parts[i+1])){
+                            follow.add(parts[i+1]);
+                        }
+                        else if (isNonTerminal(parts[i+1])){
+                            Set<String> tempFollow = findFirst(parts[i+1]);
+                            if (tempFollow.contains("lambda")) {
+                                tempFollow.remove("lambda");
+                                follow.addAll(tempFollow);
+                                // follow.addAll(findFollow(key));
+                                follow.addAll(findFollow(parts[i+1]));
+                            }
+                            else {
+                                follow.addAll(tempFollow);
+                            }
+                        }
+                        if (Arrays.asList(findFirst(key)).contains("lambda")) {
+                            follow.addAll(findFollow(key));
+                        }
+                    }
+                }
+            }
+        }
+        followMap.put(targetKey, follow);
+        return follow;
+    }
 
     private Set<String> extractNonTerminals(){
+        if (productionRules == null) {
+            throw new IllegalArgumentException("Production rules not initialized!");
+        }
+        if (productionRules.isEmpty()) {
+            throw new IllegalArgumentException("Production rules are empty!");
+        }
+        if (productionRules.keySet().isEmpty()) {
+            throw new IllegalArgumentException("Production rules keys are empty!");
+        }
         return productionRules.keySet();
     }
 
@@ -154,8 +224,26 @@ public class Parser {
                 }
             }
         }
+        if (terminalSetList.isEmpty()) {
+            throw new IllegalArgumentException("No terminals found!");
+        }
         Set<String> terminalSet = new HashSet<>(terminalSetList);
         return terminalSet;
+    }
+
+    private String findFirstSymbol(){
+        ArrayList<String> productionValues = new ArrayList<>();
+        for (List<String> values : productionRules.values()) {
+            for (String value : values) {
+                productionValues.addAll(Arrays.asList(value.split(" ")));
+            }
+        }
+        for (String key : productionRules.keySet()) {
+            if (!productionValues.contains(key)) {
+                return key;
+            }
+        }
+        throw new IllegalArgumentException("No start symbol found!");
     }
 
     private boolean isTerminal(String item){

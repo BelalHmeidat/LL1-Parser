@@ -1,38 +1,39 @@
 module-decl -> module-heading declarations block name . 
 module-heading -> module name ; 
-block -> begin stmt-list end
+block -> begin stmt-list end 
 declarations -> const-decl var-decl procedure-decl 
-const-decl -> const const-list | lambda
+const-decl -> const const-list | lambda 
 const-list -> name = value ; const-list | lambda 
-var-decl -> var var-list | lambda
-var-list -> var-item ; var-list | lambda
-var-item -> name-list : data-type
+var-decl -> var var-list | lambda 
+var-list -> var-item ; var-list | lambda 
+var-item -> name-list : data-type 
 name-list -> name more-names 
-more-names -> , name-list | lambda
+more-names -> , name-list | lambda 
 data-type -> integer | real | char 
-procedure-decl -> procedure-heading declarations block name ; procedure-decl | lambda
+procedure-decl -> procedure-heading declarations block name ; procedure-decl | lambda 
 procedure-heading -> procedure name ; 
 stmt-list -> statement ; stmt-list | lambda 
-statement -> ass-stmt | read-stmt | write-stmt | if-stmt | while-stmt | loop-stmt | exit-stmt | call-stmt | block | lambda
-ass-stmt -> name := exp
-exp -> term exp-prime
-exp-prime -> add-oper term exp-prime | lambda	
+statement -> ass-stmt | read-stmt | write-stmt | if-stmt | while-stmt | loop-stmt | exit-stmt | call-stmt | block | lambda 
+ass-stmt -> name := exp 
+exp -> term exp-prime 
+exp-prime -> add-oper term exp-prime | lambda 
 term -> factor term-prime 
-term-prime -> mul-oper factor term-prime | lambda | name-value
+term-prime -> mul-oper factor term-prime | lambda 
+factor -> ( exp ) | name-value 
 add-oper -> + | - 
-mul-oper -> * | / | mod | div
-read-stmt -> readint “(“ name-list “)” | readreal “(“ name-list “)” | readchar “(“ name-list “)” | readln 
-write-stmt -> writeint “(“ write-list “)” | writereal “(“ write-list “)” writechar “(“ write-list “)” | writeln 
+mul-oper -> * | / | mod | div 
+read-stmt -> readint ( name-list ) | readreal ( name-list ) | readchar ( name-list ) | readln 
+write-stmt -> writeint ( write-list ) | writereal ( write-list ) writechar ( write-list ) | writeln 
 write-list -> write-item more-write-value 
-more-write-value -> , write-list | lambda
+more-write-value -> , write-list | lambda 
 write-item -> name | value 
-if-stmt -> if condition then stmt-list else-part end
-else-part -> else stmt-list | lambda
-while-stmt -> while condition do stmt-list end
+if-stmt -> if condition then stmt-list else-part end 
+else-part -> else stmt-list | lambda 
+while-stmt -> while condition do stmt-list end 
 loop-stmt -> loop stmt-list until condition 
 exit-stmt -> exit 
-call-stmt -> call name (* This is a procedure name *)
+call-stmt -> call name 
 condition -> name-value relational-oper name-value 
-relational-oper -> = | |= | < | <= | > | >=
+relational-oper -> = | != | < | <= | > | >= 
 name-value -> name | value 
-value -> integer-value | real-value
+value -> integer-value | real-value 

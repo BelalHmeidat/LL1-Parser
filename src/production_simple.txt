@@ -1,4 +1,6 @@
 S -> A 
-A -> b B c 
+A -> b B c | D 
 B -> D b | lambda 
 D -> e | lambda 
+F -> B D A 
+H -> b H
