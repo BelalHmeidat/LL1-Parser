@@ -1,0 +1,4 @@
+S -> A 
+A -> b B c 
+B -> D b | lambda 
+D -> e | lambda 
