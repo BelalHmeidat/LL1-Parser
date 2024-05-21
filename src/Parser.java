@@ -18,6 +18,8 @@ public class Parser {
     private Map<String, Set<String>> firstMap;
     private Map<String, Set<String>> followMap;
 
+    private Map<String, Map<String, List<String>>> parsingTable;
+
     public Parser(){}
 
     /***
@@ -35,28 +37,22 @@ public class Parser {
         this.startSymbol = findFirstSymbol();
         this.firstMap = new HashMap<>();
         this.followMap = new HashMap<>();
-        System.out.println("Non Terminals: " + nonTerminals);
-        System.out.println("Terminals: " + terminals);
-        // for (String key : nonTerminals) {
-            int i = 2;
-            String x = nonTerminals.toArray(new String[0])[i];
-            System.out.println(x);
-            Set<String> follows = findFollow(x);
-            for (String s : follows) {
-                System.out.println("Key: " + x + " Follow: " + s);
-                System.out.println("-----------");
-            }
+        for (String key : nonTerminals) {
+            findFirst(key);
+            findFollow(key);
+            // Set<String> follows = findFollow(key);
+            // for (String s : follows) {
+            //     System.out.println("Key: " + key + " Follow: " + s);
+            //     System.out.println("-----------");
+            // }
             // Set<String> firsts = findFirst(key);
             // for (String s : firsts) {
             //     System.out.println("Key: " + key + " First: " + s);
             // }
-        // }
+        }
+        this.parsingTable = createParsingTable();
+        printParsingTable();
 
-        // String [] temp = findFollow("block");
-        // System.out.println("Follows: ");
-        // for (String s : temp) {
-        //     System.out.println(s);
-        // }
     }
 
     /***
@@ -115,6 +111,30 @@ public class Parser {
         System.out.println(sb.toString());
         return sb.toString();
     }
+    
+    private Set<String> findFirstOfProduction(String productioString){
+        Set<String> first = new HashSet<>();
+        String [] parts = productioString.split(" ");
+        for (String part : parts) {
+            if (isTerminal(part)) {
+                first.add(part);
+                break;
+            }
+            else if (isNonTerminal(part)) {
+                Set<String> tempFirst = findFirst(part);
+                if (tempFirst.contains("lambda")) {
+                    tempFirst.remove("lambda");
+                    first.addAll(tempFirst);
+                }
+                else {
+                    first.addAll(tempFirst);
+                    break;
+                }
+            }
+        }
+        return first;
+    }
+
     private Set<String> findFirst(String keyOrTerminal){
         if (isTerminal(keyOrTerminal)) {
             return new HashSet<>(Arrays.asList(keyOrTerminal));
@@ -156,6 +176,12 @@ public class Parser {
         return first;
     }
 
+    private Set<String> savedProductions = new HashSet<>(); // a set to keep track of past productions to avoid infinite recursion
+
+    private boolean isInSavedProductions(String production) {
+        return savedProductions.contains(production);
+    }
+
     private Set<String> findFollow(String targetKey){
         Set<String> follow = new HashSet<>();
         if (targetKey.trim().equals(startSymbol.trim())) {
@@ -168,8 +194,14 @@ public class Parser {
                 String [] parts = option.split(" ");
                 for (int i = 0; i < parts.length; i++) {
                     if (parts[i].equals(targetKey)){
-                        if (i == parts.length - 1) {
-                            if (!key.equals(targetKey)) {
+                        if (i == parts.length - 1) { //if target key is the last symbol in the production, find the follow of the left hand side of the production
+                            // Infinite recursion avoidance
+                            if (isInSavedProductions(key + " -> " + option)) { // if the production is already saved check if the target follows were already found before and add them
+                                if (followMap.keySet().contains(key))
+                                    follow.addAll(followMap.get(key));
+                            }
+                            else if (!key.equals(targetKey)) { // if the production is not saved, find the follow of the left hand side of the production
+                                savedProductions.add(key + " -> " + option);
                                 follow.addAll(findFollow(key));
                             }
                         }
@@ -252,6 +284,56 @@ public class Parser {
 
     private boolean isNonTerminal(String item){
         return nonTerminals.contains(item);
+    }
+
+    private Map<String, Map<String, List<String>>> createParsingTable() {
+        Map<String, Map<String,  List<String>>> parsingTable = new HashMap<>();
+        for (String key : nonTerminals) {
+            Set<String> first = findFirst(key);
+            Set<String> follow = findFollow(key);
+            List<String> productions = productionRules.get(key);
+            boolean containsLambda = productions.contains("lambda");
+            Map<String, List<String>> innerMap = new HashMap<>();
+            Set<String> terminalsWith$ = new HashSet<>(terminals);
+            terminalsWith$.add("$");
+            for (String production: productions){
+                if (production.equals("lambda")){
+                    continue;
+                }
+                Set<String> firstOfProduction = findFirstOfProduction(production);
+                firstOfProduction.remove("lambda");
+                for (String terminal : firstOfProduction){
+                    if (innerMap.containsKey(terminal)){
+                        innerMap.get(terminal).add(production);
+                    }
+                    else {
+                        innerMap.put(terminal, new ArrayList<>(Arrays.asList(production)));
+                    }
+                }
+            }
+            // for (String terminal : terminalsWith$) {
+            //     if (containsLambda && follow.contains(terminal)) {
+            //         innerMap.put(terminal, new ArrayList<>(Arrays.asList("lambda")));
+            //     }
+            // }
+            parsingTable.put(key, innerMap);
+        }
+        return parsingTable;
+    }
+
+    private void printParsingTable() {
+        for (String key : parsingTable.keySet()) {
+            System.out.println("Key: " + key);
+            Map<String, List<String>> innerMap = parsingTable.get(key);
+            for (String innerKey : innerMap.keySet()) {
+                System.out.print(innerKey + ": ");
+                List<String> innerList = innerMap.get(innerKey);
+                for (String innerValue : innerList) {
+                    System.out.print(key + " -> " + innerValue + ", ");
+                }
+            }
+            System.out.println();
+        }
     }
 
     private String[] readFile(File file) {
