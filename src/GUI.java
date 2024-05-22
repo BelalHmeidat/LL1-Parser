@@ -22,9 +22,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
+
+    private Parser parser;
     
 
-    public GUI() {
+    public GUI(Parser parser) {
+        this.parser = parser;
         //file panel
         JPanel filePanel = new JPanel();
         filePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -53,24 +56,24 @@ public class GUI extends JFrame {
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
             //Accepting file type of .txt only
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text or Pascal files only", "txt", "pas"));
             int result = fileChooser.showOpenDialog(mainPanel);
             if (result == JFileChooser.APPROVE_OPTION) {
                 statusPanel.removeAll();
                 File selectedFile = fileChooser.getSelectedFile();
                 filePathField.setText(selectedFile.getAbsolutePath());
                 //Validating through Parser
-                if (validate(selectedFile)){
-                    JLabel label = new JLabel("File is valid!");
+                if (validate(selectedFile) == "File is valid!"){
+                    JLabel label = new JLabel(validate(selectedFile));
                     label.setForeground(Color.getHSBColor(0.3f, 0.8f, 0.6f));
                     label.setFont(new Font("Arial", Font.BOLD, 20)); // Change text size
                     statusPanel.add(label);
                 }
                 else {
-                    JLabel label = new JLabel("File is invalid!");
+                    JLabel label = new JLabel(validate(selectedFile));
                     label.setForeground(Color.RED);
-                    label.setFont(new Font("Arial", Font.BOLD, 20)); // Change text size
-                    mainPanel.add(label);
+                    label.setFont(new Font("Arial", Font.BOLD, 12)); // Change text size
+                    statusPanel.add(label);
                     //Error table
                     // DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"Error", "Line"}, 0);
                       // for (String line : lines){
@@ -95,9 +98,27 @@ public class GUI extends JFrame {
     }
 
 
-    private boolean validate(File file) {
-        Parser parser = new Parser();
-        return true;
+    private String validate(File file) {
+        String code = readFile(file);
+        String result = parser.validateCode(code);
+        return result;
+    }
+
+    private String readFile(File file) {
+        StringBuilder content = new StringBuilder();
+        try {
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                content.append(scanner.nextLine().trim());
+                content.append(" ");
+            }
+            scanner.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(content.toString());
+        return content.toString();
     }
 
 }

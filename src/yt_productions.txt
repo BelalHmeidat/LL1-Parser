@@ -1,3 +1,3 @@
 S -> a A B b 
 A -> c | lambda 
-B -> d | lambda
+B -> d | lambda 

@@ -8,16 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.Stack;
 
 public class Parser {
     private Map<String, List<String>> productionRules;
     private Set<String> nonTerminals;
     private Set<String> terminals;
     private String startSymbol;
-
-    private Map<String, Set<String>> firstMap;
     private Map<String, Set<String>> followMap;
-
+    boolean isLL1;
     private Map<String, Map<String, List<String>>> parsingTable;
 
     public Parser(){}
@@ -35,7 +34,6 @@ public class Parser {
         this.nonTerminals = extractNonTerminals();
         this.terminals = extractTerminals();
         this.startSymbol = findFirstSymbol();
-        this.firstMap = new HashMap<>();
         this.followMap = new HashMap<>();
         for (String key : nonTerminals) {
             findFirst(key);
@@ -50,9 +48,10 @@ public class Parser {
             //     System.out.println("Key: " + key + " First: " + s);
             // }
         }
+        this.isLL1 = checkLL1();
+        System.out.println(checkLL1());
         this.parsingTable = createParsingTable();
         printParsingTable();
-
     }
 
     /***
@@ -86,19 +85,19 @@ public class Parser {
         }
     }
 
-    public boolean checkInteger(String input) {
+    private boolean checkInteger(String input) {
         return input.matches("\\d+");
     }
 
-    public boolean checkName(String input) {
+    private boolean checkName(String input) {
         return input.matches("[a-zA-Z_][a-zA-Z0-9_]*");
     }
 
-    public boolean checkDouble(String input) {
+    private boolean checkDouble(String input) {
         return input.matches("\\d+\\.\\d+");
     }
 
-    public String printProductionRules(){
+    private String printProductionRules(){
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, List<String>> entry : productionRules.entrySet()) {
             sb.append(entry.getKey()).append(" -> ");
@@ -112,22 +111,63 @@ public class Parser {
         return sb.toString();
     }
     
-    private Set<String> findFirstOfProduction(String productioString){
+    // private Set<String> findFirstOfProduction(String productionString){
+    //     Set<String> first = new HashSet<>();
+    //     String [] parts = productionString.split(" ");
+    //     for (String part : parts) {
+    //         if (isTerminal(part)) {
+    //             first.add(part);
+    //             break;
+    //         }
+    //         else if (isNonTerminal(part)) {
+    //             Set<String> tempFirst = findFirst(part);
+    //             if (tempFirst.contains("lambda")) {
+    //                 tempFirst.remove("lambda");
+    //                 first.addAll(tempFirst);
+    //             }
+    //             else {
+    //                 first.addAll(tempFirst);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     return first;
+    // }
+
+    private Set<String> findFirst(String productionString){
+        Set<String> first = findFirstHelper(productionString);
+        if (isNonTerminal(productionString)){
+            List<String> productions = productionRules.get(productionString);
+            if(productions.contains("lambda")){
+                first.add("lambda");
+            }
+        }
+        if (first.isEmpty()){
+            throw new IllegalArgumentException("First set is empty!");
+        }
+        return first;
+    }
+
+    private Set<String> findFirstHelper(String productionString){
         Set<String> first = new HashSet<>();
-        String [] parts = productioString.split(" ");
+        String [] parts = productionString.split(" ");
+        boolean containsLambda = false;
         for (String part : parts) {
             if (isTerminal(part)) {
                 first.add(part);
                 break;
             }
             else if (isNonTerminal(part)) {
-                Set<String> tempFirst = findFirst(part);
-                if (tempFirst.contains("lambda")) {
-                    tempFirst.remove("lambda");
+                List<String> productions = productionRules.get(part);
+                for (String production : productions) {
+                    Set<String> tempFirst = findFirstHelper(production);
+                    if (tempFirst.contains("lambda")) {
+                        tempFirst.remove("lambda");
+                        containsLambda = true;
+                    }
                     first.addAll(tempFirst);
                 }
-                else {
-                    first.addAll(tempFirst);
+                if(!containsLambda){
                     break;
                 }
             }
@@ -135,46 +175,46 @@ public class Parser {
         return first;
     }
 
-    private Set<String> findFirst(String keyOrTerminal){
-        if (isTerminal(keyOrTerminal)) {
-            return new HashSet<>(Arrays.asList(keyOrTerminal));
-        }
-        //is non terminal
-        Set<String> first = new HashSet<>();
-        List<String> productionRuleValue = productionRules.get(keyOrTerminal);
-        for (String option : productionRuleValue) {
-            String [] parts = option.split(" ");
-            if(isTerminal(parts[0])){
-                first.add(parts[0]);
-            }
-            else {
-                int i =0;
-                while(i < parts.length){
-                    Set<String> tempFirst = findFirst(parts[i]);
-                    if (tempFirst.contains("lambda")) {
-                        tempFirst.remove("lambda");
-                        first.addAll(tempFirst);
-                        if(parts.length > i+1){
-                            Set<String> tempFirstNext = findFirst(parts[i+1]);
-                            if (tempFirstNext.contains("lambda"))
-                            tempFirstNext.remove("lambda");
-                            first.addAll(tempFirstNext);
-                        }
-                    }
-                    else {
-                        first.addAll(tempFirst);
-                        break;
-                    }
-                    i++;
-                }
-            }
-        }
-        if (first.isEmpty()){
-            throw new IllegalArgumentException("First set is empty!");
-        }
-        firstMap.put(keyOrTerminal, first);
-        return first;
-    }
+    // private Set<String> findFirst(String keyOrTerminal){
+    //     if (isTerminal(keyOrTerminal)) {
+    //         return new HashSet<>(Arrays.asList(keyOrTerminal));
+    //     }
+    //     //is non terminal
+    //     Set<String> first = new HashSet<>();
+    //     List<String> productionRuleValue = productionRules.get(keyOrTerminal);
+    //     for (String option : productionRuleValue) {
+    //         String [] parts = option.split(" ");
+    //         if(isTerminal(parts[0])){
+    //             first.add(parts[0]);
+    //         }
+    //         else {
+    //             int i =0;
+    //             while(i < parts.length){
+    //                 Set<String> tempFirst = findFirst(parts[i]);
+    //                 if (tempFirst.contains("lambda")) {
+    //                     tempFirst.remove("lambda");
+    //                     first.addAll(tempFirst);
+    //                     if(parts.length > i+1){
+    //                         Set<String> tempFirstNext = findFirst(parts[i+1]);
+    //                         if (tempFirstNext.contains("lambda"))
+    //                         tempFirstNext.remove("lambda");
+    //                         first.addAll(tempFirstNext);
+    //                     }
+    //                 }
+    //                 else {
+    //                     first.addAll(tempFirst);
+    //                     break;
+    //                 }
+    //                 i++;
+    //             }
+    //         }
+    //     }
+    //     if (first.isEmpty()){
+    //         throw new IllegalArgumentException("First set is empty!");
+    //     }
+    //     firstMap.put(keyOrTerminal, first);
+    //     return first;
+    // }
 
     private Set<String> savedProductions = new HashSet<>(); // a set to keep track of past productions to avoid infinite recursion
 
@@ -244,6 +284,47 @@ public class Parser {
         return productionRules.keySet();
     }
 
+    private boolean checkLL1(){
+        for (String key: nonTerminals){
+            Set<String> follow = null;
+            if (productionRules.get(key).contains("lambda")){
+               follow = findFollow(key);
+            }
+            for (int i =0; i < productionRules.get(key).size(); i++){
+                String production = productionRules.get(key).get(i);
+                if (production.equals("lambda")){
+                    continue;
+                }
+                Set<String> firstOfProduction = findFirst(production);
+                for (int j = 0; j < productionRules.get(key).size(); j++){
+                    if (i == j){
+                        continue;
+                    }
+                    String otherProduction = productionRules.get(key).get(j);
+                    if (otherProduction.equals("lambda")){
+                        continue;
+                    }
+                    Set<String> firstOfOtherProduction = findFirst(otherProduction);
+                    Set<String> intersection = new HashSet<>(firstOfProduction);
+                    intersection.retainAll(firstOfOtherProduction);
+                    if (!intersection.isEmpty()){
+                        System.out.println("Key: " + key + " Production: " + production + " Other Production: " + otherProduction);
+                        return false;
+                    }
+                }
+                if (follow != null){ //means that lambda is in the production
+                    for (String terminal : firstOfProduction){
+                        if (follow.contains(terminal)){
+                            System.out.println("Key: " + key + " Production: " + production + " Terminal: " + terminal);
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     private Set<String> extractTerminals(){
         List<String> terminalSetList = new ArrayList<>();
         for (List<String> values : productionRules.values()) {
@@ -289,7 +370,6 @@ public class Parser {
     private Map<String, Map<String, List<String>>> createParsingTable() {
         Map<String, Map<String,  List<String>>> parsingTable = new HashMap<>();
         for (String key : nonTerminals) {
-            Set<String> first = findFirst(key);
             Set<String> follow = findFollow(key);
             List<String> productions = productionRules.get(key);
             boolean containsLambda = productions.contains("lambda");
@@ -300,22 +380,33 @@ public class Parser {
                 if (production.equals("lambda")){
                     continue;
                 }
-                Set<String> firstOfProduction = findFirstOfProduction(production);
+                Set<String> firstOfProduction = findFirst(production);
                 firstOfProduction.remove("lambda");
                 for (String terminal : firstOfProduction){
                     if (innerMap.containsKey(terminal)){
                         innerMap.get(terminal).add(production);
+                        if (isLL1){
+                            throw new IllegalArgumentException("Conflict in parsing table! It should be LL1! but it found 2 productions for the same terminal!");
+                        }
                     }
                     else {
                         innerMap.put(terminal, new ArrayList<>(Arrays.asList(production)));
                     }
                 }
             }
-            // for (String terminal : terminalsWith$) {
-            //     if (containsLambda && follow.contains(terminal)) {
-            //         innerMap.put(terminal, new ArrayList<>(Arrays.asList("lambda")));
-            //     }
-            // }
+            for (String terminal : terminalsWith$) {
+                if (containsLambda && follow.contains(terminal)) {
+                    if (innerMap.containsKey(terminal)){
+                        innerMap.get(terminal).add("lambda");
+                        if (isLL1){
+                            throw new IllegalArgumentException("Conflict in parsing table! It should be LL1! but it found 2 productions for the same terminal!");
+                        }
+                    }
+                    else {
+                        innerMap.put(terminal, new ArrayList<>(Arrays.asList("lambda")));
+                    }
+                }
+            }
             parsingTable.put(key, innerMap);
         }
         return parsingTable;
@@ -336,18 +427,82 @@ public class Parser {
         }
     }
 
-    private String[] readFile(File file) {
-        ArrayList<String> content = new ArrayList<>();
-        try {
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine()) {
-                content.add(scanner.nextLine());
+    public String validateCode(String code){
+        List<String> tokens = new ArrayList<>(Arrays.asList(code.split(" ")));
+        // for (String token : tokens){
+        //     if (!isTerminal(token) && !isNonTerminal(token)){
+        //         throw new IllegalArgumentException("Token: " + token + " is not a terminal or non terminal!");
+        //     }
+        // }
+        Stack<String> parsingStack = new Stack<>();
+        parsingStack.push("$");
+        parsingStack.push(startSymbol);
+        while (!parsingStack.empty()){
+            String top = parsingStack.pop();
+            if (isTerminal(top)){
+                if (top.equals("$")){
+                    if (tokens.isEmpty()){
+                        return "Code is valid!";
+                    }
+                    else {
+                        return "Code is invalid! Expected end of code but found: " + tokens.get(0) + " left!";
+                    }
+                }
+                if (tokens.isEmpty()){
+                    return "Code is invalid! Expected end of code but found: $ missing!";
+                }
+                String token = tokens.get(0);
+                if (top.equals(token)){
+                    tokens.remove(0);
+                }
+                else if (top.equals("name")){
+                    if (checkName(token)){
+                        tokens.remove(0);
+                    }
+                    else {
+                        return "Code is invalid! Expected valid name but found: " + token + " which is not a valid name!";
+                    }
+                }
+                else if (top.equals("integer-value")){
+                    if (checkInteger(token)){
+                        tokens.remove(0);
+                    }
+                    else {
+                        return "Code is invalid! Expected integer but found: " + token;
+                    }
+                }
+                else if (top.equals("real-value")){
+                    if (checkDouble(token)){
+                        tokens.remove(0);
+                    }
+                    else {
+                        return "Code is invalid! Expected double but found: " + token;
+                    }
+                }
+                else {
+                    return "Code is invalid! Expected: " + top + " but found: " + token + " instead!";
+                }
             }
-            scanner.close();
+            else if (isNonTerminal(top)){
+                if (!parsingTable.containsKey(top)){
+                    return "Code is invalid! Could not find non terminal in the rows of the parsing table!";
+                }
+                if (!parsingTable.get(top).containsKey(tokens.get(0))){
+                    return "Code is invalid! Could not find terminal " + tokens.get(0) + " in the columns of the parsing table!";
+                }
+                List<String> productions = parsingTable.get(top).get(tokens.get(0));
+                if (productions.size() > 1){
+                    throw new IllegalArgumentException("Conflict in parsing table! It should be LL1! but it found 2 productions for the same terminal!");
+                }
+                List<String> production = Arrays.asList(productions.get(0).split(" ")); // LL1 has only one production
+                for (int i = production.size() - 1; i >= 0; i--){
+                    if (!production.get(i).equals("lambda")){
+                        parsingStack.push(production.get(i));
+                    }
+                }
+            }
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return content.toArray(new String[0]);
+        return "Code is invalid! Parsing stack is empty!";
     }
+
 }
