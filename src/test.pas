@@ -1,5 +1,9 @@
 module PrintHelloWorld ;
+procedure PrintHelloWorld ;
 begin
-	writechar ( 'hello' ) ;
-	writeln ;
-end PrintHelloWorld .
+    writeln ( 'Hello, World!' ) ;
+end;
+
+begin
+    PrintHelloWorld ;
+end helloWorld .

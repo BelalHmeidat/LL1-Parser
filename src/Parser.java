@@ -16,7 +16,7 @@ public class Parser {
     private Set<String> terminals;
     private String startSymbol;
     private Map<String, Set<String>> followMap;
-    boolean isLL1;
+    private boolean isLL1;
     private Map<String, Map<String, List<String>>> parsingTable;
 
     public Parser(){}
@@ -427,7 +427,23 @@ public class Parser {
         }
     }
 
-    public String validateCode(String code){
+    private int errLineNum = 1;
+
+    private String getToken(List<String> tokens){
+        if (tokens.isEmpty()){
+            return "End of code!";
+        }
+        if (tokens.get(0).equals("!ln")){
+            errLineNum++;
+            System.out.println("Line: " + errLineNum);
+            tokens.remove(0);
+            return tokens.get(0);
+        }
+        return tokens.get(0);
+        
+    }
+
+    public  String validateCode(String code){
         List<String> tokens = new ArrayList<>(Arrays.asList(code.split(" ")));
         // for (String token : tokens){
         //     if (!isTerminal(token) && !isNonTerminal(token)){
@@ -445,13 +461,13 @@ public class Parser {
                         return "Code is valid!";
                     }
                     else {
-                        return "Code is invalid! Expected end of code but found: " + tokens.get(0) + " left!";
+                        return "Code is invalid! Expected end of code but found: " + getToken(tokens) + " left!";
                     }
                 }
                 if (tokens.isEmpty()){
                     return "Code is invalid! Expected end of code but found: $ missing!";
                 }
-                String token = tokens.get(0);
+                String token = getToken(tokens);
                 if (top.equals(token)){
                     tokens.remove(0);
                 }
@@ -487,10 +503,10 @@ public class Parser {
                 if (!parsingTable.containsKey(top)){
                     return "Code is invalid! Could not find non terminal in the rows of the parsing table!";
                 }
-                if (!parsingTable.get(top).containsKey(tokens.get(0))){
-                    return "Code is invalid! Could not find terminal " + tokens.get(0) + " in the columns of the parsing table!";
+                if (!parsingTable.get(top).containsKey(getToken(tokens))){
+                    return "Code is invalid! " + top + " does not have a production for: " + getToken(tokens);
                 }
-                List<String> productions = parsingTable.get(top).get(tokens.get(0));
+                List<String> productions = parsingTable.get(top).get(getToken(tokens));
                 if (productions.size() > 1){
                     throw new IllegalArgumentException("Conflict in parsing table! It should be LL1! but it found 2 productions for the same terminal!");
                 }

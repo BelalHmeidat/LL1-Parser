@@ -3,23 +3,18 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
-import java.awt.Label;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
 
@@ -100,25 +95,24 @@ public class GUI extends JFrame {
 
     private String validate(File file) {
         String code = readFile(file);
+        // System.out.println(code);
         String result = parser.validateCode(code);
         return result;
     }
 
     private String readFile(File file) {
-        StringBuilder content = new StringBuilder();
+        ArrayList<String> lines = new ArrayList<>();
         try {
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
-                content.append(scanner.nextLine().trim());
-                content.append(" ");
+                lines.add(scanner.nextLine());
             }
             scanner.close();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(content.toString());
-        return content.toString();
+        return FileProcessor.processFileContent(lines.toArray(new String[0]));
     }
 
 }
