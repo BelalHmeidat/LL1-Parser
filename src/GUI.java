@@ -3,6 +3,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.awt.TextArea;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,17 +59,18 @@ public class GUI extends JFrame {
                 File selectedFile = fileChooser.getSelectedFile();
                 filePathField.setText(selectedFile.getAbsolutePath());
                 //Validating through Parser
-                if (validate(selectedFile) == "File is valid!"){
-                    JLabel label = new JLabel(validate(selectedFile));
+                String output = validate(selectedFile);
+                if (output == null){
+                    JLabel label = new JLabel("Code is valid!");
                     label.setForeground(Color.getHSBColor(0.3f, 0.8f, 0.6f));
                     label.setFont(new Font("Arial", Font.BOLD, 20)); // Change text size
                     statusPanel.add(label);
                 }
                 else {
-                    JLabel label = new JLabel(validate(selectedFile));
-                    label.setForeground(Color.RED);
-                    label.setFont(new Font("Arial", Font.BOLD, 12)); // Change text size
-                    statusPanel.add(label);
+                    TextArea textArea = new TextArea(output, 10, 50);
+                    textArea.setEditable(false);
+                    statusPanel.add(textArea);
+                    textArea.setForeground(Color.RED);
                     //Error table
                     // DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"Error", "Line"}, 0);
                       // for (String line : lines){

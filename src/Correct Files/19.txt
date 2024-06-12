@@ -1,0 +1,21 @@
+module DataTypeModule;
+
+var
+    intVar: integer;
+    realVar: real;
+    charVar: char;
+
+begin
+    intVar := 10;
+    realVar := 20.5;
+    charVar := B;
+    if intVar > 5 then
+        writeint(intVar);
+        writeln;
+    else
+        writereal(realVar);
+        writeln;
+    end;
+    writechar(charVar);
+    writeln;
+end DataTypeModule.

@@ -1,0 +1,28 @@
+module ComplexExpressionsModule;
+
+var
+    n: integer;
+    res: real;
+
+procedure ComputeSquare;
+begin
+    res := n * n;
+end ComputeSquare;
+
+procedure ComputeHalf;
+begin
+    res := n / 2.0;
+end ComputeHalf;
+
+begin
+    n := 8;
+    call ComputeSquare;
+    writereal(res);
+    call ComputeHalf;
+    writereal(res);
+    if res > 3.0 then
+        writechar(G);
+    else
+        writechar(L);
+    end;
+end ComplexExpressionsModule.

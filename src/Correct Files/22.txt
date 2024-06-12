@@ -1,0 +1,16 @@
+module ExitLoopModule;
+
+var
+    n: integer;
+
+begin
+    n := 0;
+    loop
+        n := n + 1;
+        if n >= 10 then
+            exit;
+        end;
+        writeint(n);
+    until n >= 10;
+    writeln;
+end ExitLoopModule.

@@ -1,0 +1,25 @@
+module NestedProceduresModule;
+
+const
+    MaxItems = 50;
+
+var
+    index: integer;
+    sum: real;
+
+procedure ComputeSum;
+var
+    i: integer;
+begin
+    sum := 0;
+    while i <= MaxItems do
+        sum := sum + i;
+    end;
+end ComputeSum;
+
+begin
+    index := 0;
+    readint(index);
+    call ComputeSum;
+    writereal(sum);
+end NestedProceduresModule.

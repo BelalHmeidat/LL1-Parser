@@ -1,0 +1,16 @@
+module IOExample;
+
+var
+    number: integer;
+    result: integer;
+
+procedure DoubleNumber;
+begin
+    result := number * 2;
+end DoubleNumber;
+
+begin
+    readint(number);
+    call DoubleNumber;
+    writeint(result);
+end IOExample.

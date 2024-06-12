@@ -1,0 +1,17 @@
+module LoopModule;
+
+const
+    LIMIT = 10;
+
+var
+    i: integer;
+
+begin
+    i := 0;
+    loop
+        i := i + 1;
+        if i = LIMIT then
+            exit;
+        end;
+    until i >= LIMIT;
+end LoopModule.

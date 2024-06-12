@@ -1,0 +1,21 @@
+module Example;
+
+const
+    MAX = 100;
+    M.N = 0;
+
+var
+    counter: integer;
+    flag: char;
+
+procedure Initialize;
+bigin
+    counter := 0;
+    flag &= N;
+end Initialize
+
+begin
+    if counter < MAX then
+        counter |= counter + 1
+    end;
+end ^Example.

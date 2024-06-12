@@ -23,7 +23,7 @@ factor -> ( exp ) | name-value
 add-oper -> + | - 
 mul-oper -> * | / | mod | div 
 read-stmt -> readint ( name-list ) | readreal ( name-list ) | readchar ( name-list ) | readln 
-write-stmt -> writeint ( write-list ) | writereal ( write-list ) writechar ( write-list ) | writeln 
+write-stmt -> writeint ( write-list ) | writereal ( write-list ) | writechar ( write-list ) | writeln 
 write-list -> write-item more-write-value 
 more-write-value -> , write-list | lambda 
 write-item -> name | value 

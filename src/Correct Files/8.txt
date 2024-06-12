@@ -1,0 +1,35 @@
+module ExampleModule;
+
+const
+    Pi = 3.14;
+    MaxValue = 100;
+
+var
+    count: integer;
+    total: real;
+    character: char;
+
+procedure MyProcedure;
+const
+    LocalMax = 10;
+var
+    localVar: integer;
+begin
+    count := 1;
+    readint(count);
+    writeint(total);
+    if count < MaxValue then
+        writechar(character);
+    end;
+end MyProcedure;
+
+begin
+    count := 0;
+    while count < MaxValue do
+        count := count + 1;
+    end;
+    loop
+        writechar(character);
+    until count >= MaxValue;
+    exit;
+end ExampleModule.

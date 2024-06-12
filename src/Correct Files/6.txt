@@ -1,0 +1,17 @@
+module NestedBlocks;
+
+var
+    x: integer;
+
+procedure InnerBlock;
+begin
+    x := 5;
+end InnerBlock;
+
+begin
+    begin
+        x := 10;
+        call InnerBlock;
+    end;
+    writeint(x);
+end NestedBlocks.

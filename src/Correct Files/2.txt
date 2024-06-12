@@ -1,0 +1,24 @@
+module ComplexModule;
+
+const
+    PI = 3.14;
+
+var
+    radius: real;
+    area: real;
+
+procedure CalculateArea;
+begin
+    area := PI * radius * radius;
+end CalculateArea;
+
+procedure InputRadius;
+begin
+    readreal(radius);
+end InputRadius;
+
+begin
+    call InputRadius;
+    call CalculateArea;
+    writereal(area);
+end ComplexModule.

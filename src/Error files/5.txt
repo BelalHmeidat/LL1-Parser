@@ -1,0 +1,13 @@
+module WhileExample;
+
+var
+    42co6unter43: int;
+    laith_ghnemat : real;
+
+begin
+    counter = 0
+    while counter < laith do
+        counter == counter + 1;
+    end
+    writeint(counter);
+end 7WhileExample.

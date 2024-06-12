@@ -1,0 +1,16 @@
+module LoopModule;
+
+var
+    counter: integer;
+    total: real;
+
+begin
+    counter := 0;
+    total := 0.0;
+    while counter < 10 do
+        total := total + counter;
+        counter := counter + 1;
+    end;
+    writeint(counter);
+    writereal(total);
+end LoopModule.

@@ -1,0 +1,29 @@
+module MultiVarModule;
+
+var
+    a, b, c: integer;
+    x, y, z: real;
+    letter: char;
+
+procedure Initialize;
+begin
+    a := 1;
+    b := 2;
+    c := 3;
+    x := 1.1;
+    y := 2.2;
+    z := 3.3;
+    letter := Z;
+end Initialize;
+
+begin
+    call Initialize;
+    writeint(a);
+    writeint(b);
+    writeint(c);
+    writereal(x);
+    writereal(y);
+    writereal(z);
+    writechar(letter);
+    writeln;
+end MultiVarModule.

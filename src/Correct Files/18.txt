@@ -1,0 +1,24 @@
+module NestedBlocksModule;
+
+var
+    a: integer;
+    b: integer;
+
+procedure OuterProcedure;
+var
+    c: integer;
+begin
+    c := 10;
+    begin
+        a := c + 5;
+        writeint(a);
+    end;
+end OuterProcedure;
+
+begin
+    a := 1;
+    b := 2;
+    call OuterProcedure;
+    writeint(b);
+    writeln;
+end NestedBlocksModule.

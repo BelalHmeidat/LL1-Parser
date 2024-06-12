@@ -1,0 +1,16 @@
+module ArithmeticModule;
+
+var
+    intVar: integer;
+    realVar: real;
+    charVar: char;
+
+begin
+    intVar := 15;
+    realVar := intVar / 2;
+    charVar := A;
+    writeint(intVar);
+    writereal(realVar);
+    writechar(charVar);
+    writeln;
+end ArithmeticModule.

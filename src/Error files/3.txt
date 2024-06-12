@@ -1,0 +1,17 @@
+LoopModule;
+
+const
+    LIM25025IT = 10;
+
+var
+    i: integer;
+
+begin
+    i := 0;
+    loop
+        i := i + 1;
+        if i = LIMIT then
+            exit;
+        end
+    untl i >= LIMIT;
+end LoopModule$

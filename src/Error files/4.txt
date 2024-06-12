@@ -1,0 +1,14 @@
+module IOExample;
+
+var
+    number: integer;
+    result:= integer;
+
+procedure DoubleNumber;
+
+
+begin
+    readint(number);
+    call DoubleNumber
+    writeint(result);
+IOExample.

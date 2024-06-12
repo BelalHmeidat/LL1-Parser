@@ -1,0 +1,34 @@
+module AdvancedModule;
+
+const
+    Threshold = 50;
+    Factor = 2;
+
+var
+    num: integer;
+    result: real;
+
+procedure DoubleValue;
+var
+    temp: integer;
+begin
+    temp := num * Factor;
+    result := temp;
+end DoubleValue;
+
+procedure CheckThreshold;
+begin
+    if num > Threshold then
+        writeint(num);
+    else
+        writechar(N);
+    end;
+end CheckThreshold;
+
+begin
+    num := 25;
+    readint(num);
+    call DoubleValue;
+    call CheckThreshold;
+    writereal(result);
+end AdvancedModule.

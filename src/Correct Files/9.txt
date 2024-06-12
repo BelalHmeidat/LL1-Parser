@@ -1,0 +1,16 @@
+module SimpleModule;
+
+var
+    x: integer;
+    y: real;
+
+begin
+    x := 10;
+    y := 20.5;
+    if x > 5 then
+        writeint(x);
+        writeln;
+    else
+        writereal(y);
+    end;
+end SimpleModule.

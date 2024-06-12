@@ -1,0 +1,18 @@
+module ReadWriteArithmeticModule;
+
+var
+    num1: integer;
+    num2: integer;
+    sum: integer;
+    product: integer;
+
+begin
+    readint(num1);
+    readint(num2);
+    sum := num1 + num2;
+    product := num1 * num2;
+    writeint(sum);
+    writeln;
+    writeint(product);
+    writeln;
+end ReadWriteArithmeticModule.

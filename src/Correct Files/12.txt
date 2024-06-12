@@ -1,0 +1,22 @@
+module NestedIfModule;
+
+var
+    value: integer;
+
+procedure DisplayMessage;
+begin
+    if value > 0 then
+        if value < 10 then
+            writechar(S);
+        else
+            writechar(L);
+        end;
+    else
+        writechar(N);
+    end;
+end DisplayMessage;
+
+begin
+    value := 5;
+    call DisplayMessage;
+end NestedIfModule.

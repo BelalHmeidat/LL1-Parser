@@ -48,6 +48,8 @@ public class Parser {
             //     System.out.println("Key: " + key + " First: " + s);
             // }
         }
+        System.out.println(findFirst("declarations"));
+        System.out.println(" -------");
         this.isLL1 = checkLL1();
         System.out.println(checkLL1());
         this.parsingTable = createParsingTable();
@@ -152,7 +154,8 @@ public class Parser {
         Set<String> first = new HashSet<>();
         String [] parts = productionString.split(" ");
         boolean containsLambda = false;
-        for (String part : parts) {
+        for (int i = 0; i < parts.length; i++){ 
+            String part = parts[i];
             if (isTerminal(part)) {
                 first.add(part);
                 break;
@@ -162,7 +165,9 @@ public class Parser {
                 for (String production : productions) {
                     Set<String> tempFirst = findFirstHelper(production);
                     if (tempFirst.contains("lambda")) {
-                        tempFirst.remove("lambda");
+                        if (i != parts.length - 1) { // if it is the last symbol in the production, do not remove lambda
+                            tempFirst.remove("lambda");
+                        }
                         containsLambda = true;
                     }
                     first.addAll(tempFirst);
@@ -427,23 +432,24 @@ public class Parser {
         }
     }
 
-    private int errLineNum = 1;
+    private int lineNo = 1;
 
+    //returns first token from the list of tokes and increments the line number if new line found
     private String getToken(List<String> tokens){
-        if (tokens.isEmpty()){
-            return "End of code!";
+        while (!tokens.isEmpty()){
+            if (tokens.get(0).equals("!ln")){
+                lineNo++;
+                tokens.remove(0);
+            } else {
+                return tokens.get(0);
+            }
         }
-        if (tokens.get(0).equals("!ln")){
-            errLineNum++;
-            System.out.println("Line: " + errLineNum);
-            tokens.remove(0);
-            return tokens.get(0);
-        }
-        return tokens.get(0);
-        
+        return "End of code!";
     }
 
-    public  String validateCode(String code){
+    public String validateCode(String code){
+        lineNo = 1;
+        System.out.println("Code: " + code);
         List<String> tokens = new ArrayList<>(Arrays.asList(code.split(" ")));
         // for (String token : tokens){
         //     if (!isTerminal(token) && !isNonTerminal(token)){
@@ -452,13 +458,17 @@ public class Parser {
         // }
         Stack<String> parsingStack = new Stack<>();
         parsingStack.push("$");
-        parsingStack.push(startSymbol);
+        parsingStack.push(startSymbol); //TODO: check starting symbol
+        System.out.println(parsingStack);
         while (!parsingStack.empty()){
+            System.out.println(parsingStack);
             String top = parsingStack.pop();
+            System.out.println("Top: " + top);
+            System.out.println(getToken(tokens));
             if (isTerminal(top)){
                 if (top.equals("$")){
                     if (tokens.isEmpty()){
-                        return "Code is valid!";
+                        return "Code is valid because parsing stack is empty!"; //TODO: check this correct?
                     }
                     else {
                         return "Code is invalid! Expected end of code but found: " + getToken(tokens) + " left!";
@@ -476,7 +486,7 @@ public class Parser {
                         tokens.remove(0);
                     }
                     else {
-                        return "Code is invalid! Expected valid name but found: " + token + " which is not a valid name!";
+                        return "Code is invalid! Expected a name but found: " + token + " which is not a valid name!";
                     }
                 }
                 else if (top.equals("integer-value")){
@@ -496,15 +506,18 @@ public class Parser {
                     }
                 }
                 else {
-                    return "Code is invalid! Expected: " + top + " but found: " + token + " instead!";
+                    return "Error at line " + lineNo +": " + code.split("!ln")[lineNo-1] + "\nCode is invalid! Expected: \"" + top + "\" but found: \"" + token + "\"!";
                 }
             }
             else if (isNonTerminal(top)){
                 if (!parsingTable.containsKey(top)){
-                    return "Code is invalid! Could not find non terminal in the rows of the parsing table!";
+                    return "Code is invalid! Could not find non terminal in the parsing table keys!";
                 }
-                if (!parsingTable.get(top).containsKey(getToken(tokens))){
-                    return "Code is invalid! " + top + " does not have a production for: " + getToken(tokens);
+                if (parsingTable.get(top).keySet().contains(getToken(tokens)) == false){
+                    if (replaceVar(tokens, parsingTable.get(top).keySet())){
+                        System.out.println("Replaced variable!" + " " + getToken(tokens));
+                    }
+                    else return "Error at line " + lineNo +": " + code.split("!ln")[lineNo-1] + "\nCode is invalid! \"" + top + "\" does not have a production for: \"" + getToken(tokens) +"\"!";
                 }
                 List<String> productions = parsingTable.get(top).get(getToken(tokens));
                 if (productions.size() > 1){
@@ -518,7 +531,27 @@ public class Parser {
                 }
             }
         }
-        return "Code is invalid! Parsing stack is empty!";
+        return null;
+    }
+
+    private boolean replaceVar(List<String> tokens, Set<String> productionKeys){
+        String var = tokens.get(0);
+        if (productionKeys.contains("name") && checkName(var)){
+            tokens.remove(0);
+            tokens.addFirst("name");
+            return true;
+        }
+        else if (productionKeys.contains("integer-value") && checkInteger(var)){
+            tokens.remove(0);
+            tokens.addFirst("integer-value");
+            return true;
+        }
+        else if (productionKeys.contains("real-value") && checkDouble(var)){
+            tokens.remove(0);
+            tokens.addFirst("real-value");
+            return true;
+        }
+        return false;
     }
 
 }

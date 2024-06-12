@@ -1,0 +1,22 @@
+module ComplexConditionsModule;
+
+var
+    a: integer;
+    b: integer;
+
+begin
+    a := 5;
+    b := 10;
+    if a < b then
+	b := b - a;
+
+        if b > 4 then
+            writechar(X);
+        else
+            writechar(Y);
+        end;
+    else
+        writechar(Z);
+    end;
+    writeln;
+end ComplexConditionsModule.

@@ -1,0 +1,35 @@
+module Example.Module;
+
+const
+    Pi = 3.1.4;
+    MaxValue = 1..00.;
+
+var
+    count: integer;
+    total: rel;
+    character: character;
+
+procedure MyProcedure;
+cost
+    LocalMax |= 10;
+var
+    localVar: integer;
+begin #
+    count := 1;
+    readint(count);
+    writeint(total);
+    if count < ghnemat then
+        writechar(character);
+    end;
+end MyProcedure
+
+begin
+    count := 0;
+    while count < MaxValue do
+        count := count + 1;
+    end;
+    loop
+        writechar(character);
+    
+    exit;
+end ExampleModule.

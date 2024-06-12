@@ -3,7 +3,7 @@ import java.util.List;
 
 public class FileProcessor {
 
-    static private char [] spaceOptionalTokens = {'+', '-', '*', '/', '(', ')', ';', '.'};
+    static private char [] spaceOptionalTokens = {'+', '-', '*', '/', '(', ')', ';', '.', ','};
     static private char [] uncertainChars = {'<', '>', ':', '|'};
 
     static String processFileContent(String [] lines){
@@ -66,6 +66,9 @@ public class FileProcessor {
                 if(!didBreak){
                     for (char c : spaceOptionalTokens){
                         if(sb.charAt(i) == c){
+                            if(sb.charAt(i) == '.' && checkNumberAt(i-1, sb.toString()) && checkNumberAt(i+1, sb.toString())){
+                                break;
+                            }
                             if (!checkSpaceAt(i-1, sb.toString())){
                                 sb = insertSpaceAt(i, sb.toString());
                                 i++;

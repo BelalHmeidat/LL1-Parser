@@ -1,0 +1,19 @@
+module ConditionalLoopModule;
+
+var
+    counter: integer;
+
+begin
+    counter := 0;
+    while counter < 5 do
+	counter := counter mod 2;
+
+        if counter = 0 then
+            writeint(counter);
+        else
+            writechar(O);
+        end;
+        counter := counter + 1;
+    end;
+    writeln;
+end ConditionalLoopModule.

@@ -1,0 +1,16 @@
+module NestedBlocks
+
+    x: integer;
+
+procedure InnerBlock;
+begin
+    x := 5;
+end InnerBlock;
+
+begin
+    begin
+        x := 10;
+        call InnerBlock;
+    end;
+    writeintagaga(x, 4);
+end NestedBlocks

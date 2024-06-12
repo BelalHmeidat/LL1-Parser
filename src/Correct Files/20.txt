@@ -1,0 +1,16 @@
+module IOOperationsModule;
+
+var
+    x: integer;
+    y: real;
+    z: char;
+
+begin
+    readint(x);
+    readreal(y);
+    readchar(z);
+    writeint(x);
+    writereal(y);
+    writechar(z);
+    writeln;
+end IOOperationsModule.

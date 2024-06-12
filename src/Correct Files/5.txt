@@ -1,0 +1,12 @@
+module WhileExample;
+
+var
+    counter: integer;
+
+begin
+    counter := 0;
+    while counter < 5 do
+        counter := counter + 1;
+    end;
+    writeint(counter);
+end WhileExample.

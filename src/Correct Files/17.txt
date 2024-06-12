@@ -1,0 +1,24 @@
+module WhileLoopModule;
+
+const
+    Limit = 5;
+
+var
+    i: integer;
+    sum: integer;
+
+procedure IncrementSum;
+begin
+    sum := sum + i;
+end IncrementSum;
+
+begin
+    i := 0;
+    sum := 0;
+    while i < Limit do
+        call IncrementSum;
+        i := i + 1;
+    end;
+    writeint(sum);
+    writeln;
+end WhileLoopModule.

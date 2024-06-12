@@ -1,0 +1,13 @@
+module ReadModule;
+
+var
+    value1, value2: integer;
+    sum: integer;
+
+begin
+    readint(value1);
+    readint(value2);
+    sum := value1 + value2;
+    writeint(sum);
+    writeln;
+end ReadModule.

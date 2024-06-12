@@ -1,0 +1,23 @@
+module MultiProcedureCallsModule;
+
+var
+    val: integer;
+
+procedure Increment;
+begin
+    val := val + 1;
+end Increment;
+
+procedure Decrement;
+begin
+    val := val - 1;
+end Decrement;
+
+begin
+    val := 5;
+    call Increment;
+    call Increment;
+    call Decrement;
+    writeint(val);
+    writeln;
+end MultiProcedureCallsModule.

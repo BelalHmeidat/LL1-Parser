@@ -1,0 +1,14 @@
+module ArithmeticExpressionsModule;
+
+var
+    a: integer;
+    b: integer;
+    result: integer;
+
+begin
+    a := 5;
+    b := 10;
+    result := (a + b) * 2;
+    writeint(result);
+    writeln;
+end ArithmeticExpressionsModule.
