@@ -18,7 +18,9 @@ public class FileProcessor {
             processedLine = removeExtraSpaces(processedLine);
             processedLines.add(processedLine);
         }
-        return String.join(" ", processedLines);
+        String processed =  String.join(" ", processedLines);
+        processed = processed.replaceAll("\\|\\=", "!=");
+        return processed;
     }
 
     static public String addSpacesAroundTokens(String line){

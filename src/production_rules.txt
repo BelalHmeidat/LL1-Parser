@@ -1,7 +1,7 @@
 module-decl -> module-heading declarations block name . 
 module-heading -> module name ; 
 block -> begin stmt-list end 
-declarations -> const-decl var-decl procedure-decl 
+declarations -> const-decl var-decl procedure-decl | lambda
 const-decl -> const const-list | lambda 
 const-list -> name = value ; const-list | lambda 
 var-decl -> var var-list | lambda 

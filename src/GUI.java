@@ -14,8 +14,13 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class GUI extends JFrame {
 
@@ -29,11 +34,24 @@ public class GUI extends JFrame {
         filePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         filePanel.setLayout(new BoxLayout(filePanel, BoxLayout.X_AXIS));
         JTextField filePathField = new JTextField();
-        filePathField.setPreferredSize(new Dimension(200, 24));
+        filePathField.setPreferredSize(new Dimension(300, 24));
         filePathField.setMaximumSize(filePathField.getPreferredSize());
         JButton browseButton = new JButton("Browse");
         filePanel.add(filePathField);
         filePanel.add(browseButton);
+
+        //File preview panel
+        JPanel fileViewPanel = new JPanel(new GridBagLayout());
+        // TextArea fileView = new TextArea("File Content will be viewed here",10, 70);
+        JTextPane fileView = new JTextPane();
+        StyledDocument doc = fileView.getStyledDocument();
+        fileView.setEditable(false);
+        fileView.setPreferredSize(new Dimension(400, 300));
+        JScrollPane scrollPane = new JScrollPane(fileView);
+        scrollPane.setMinimumSize(new Dimension(400, 200));
+        fileViewPanel.add(scrollPane);
+        // fileViewPanel.add(fileView);
+
 
         //status panel
         JPanel statusPanel = new JPanel(new GridBagLayout()); //flexible layout to fill available space
@@ -42,6 +60,7 @@ public class GUI extends JFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.add(filePanel);
+        mainPanel.add(fileViewPanel);
         mainPanel.add(statusPanel);
 
         //browse button action
@@ -50,7 +69,7 @@ public class GUI extends JFrame {
             JFileChooser fileChooser = new JFileChooser();
             // Start at current directory
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-            //Accepting file type of .txt only
+            //Accepting file type of .txt and pascal only
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileChooser.setFileFilter(new FileNameExtensionFilter("Text or Pascal files only", "txt", "pas"));
             int result = fileChooser.showOpenDialog(mainPanel);
@@ -58,27 +77,43 @@ public class GUI extends JFrame {
                 statusPanel.removeAll();
                 File selectedFile = fileChooser.getSelectedFile();
                 filePathField.setText(selectedFile.getAbsolutePath());
+                String [] fileContent = readFile(selectedFile);
+                String processedContent = FileProcessor.processFileContent(fileContent);
+                for (int i =0 ; i < fileContent.length; i++){
+                    fileContent[i] = (i + 1) + " " + fileContent[i];
+                }
+                if (String.join("\n", fileContent).trim().isEmpty()){
+                    fileView.setText("File is empty!");
+                    return;
+                }
+                fileView.setText(String.join("\n", fileContent));
+
                 //Validating through Parser
-                String output = validate(selectedFile);
-                if (output == null){
+                String output = validate(processedContent);
+                if (output == null){ //Code is valid
                     JLabel label = new JLabel("Code is valid!");
                     label.setForeground(Color.getHSBColor(0.3f, 0.8f, 0.6f));
                     label.setFont(new Font("Arial", Font.BOLD, 20)); // Change text size
                     statusPanel.add(label);
                 }
-                else {
-                    TextArea textArea = new TextArea(output, 10, 50);
+                else { //Code is invalid
+                    fileView.setText("");
+                    for (int i =0 ; i < fileContent.length; i++){
+                        Style style = null;
+                        if(parser.lineNo == i+1){
+                            style = fileView.addStyle(fileContent[i], null);
+                            StyleConstants.setForeground(style, Color.RED);
+                        }
+                        try{
+                            doc.insertString(doc.getLength(), fileContent[i] + "\n",style);
+                        }catch(Exception ex){
+                            ex.printStackTrace();
+                        }
+                    }
+                    TextArea textArea = new TextArea(output, 10, 70);
                     textArea.setEditable(false);
                     statusPanel.add(textArea);
                     textArea.setForeground(Color.RED);
-                    //Error table
-                    // DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"Error", "Line"}, 0);
-                      // for (String line : lines){
-                        //     tableModel.addRow(new Object[]{line, "OK"});
-                    // }
-                    // JTable table = new JTable(tableModel);
-                    // JScrollPane scrollPane = new JScrollPane(table);
-                    // mainPanel.add(scrollPane);
                 }
                 mainPanel.revalidate();
                 mainPanel.repaint();
@@ -87,7 +122,7 @@ public class GUI extends JFrame {
 
         this.setTitle("Belal's Parser");
         this.setContentPane(mainPanel);
-        this.setSize(500, 400);
+        this.setSize(600, 500);
         this.setVisible(true);
         this.setResizable(false);
 
@@ -95,14 +130,13 @@ public class GUI extends JFrame {
     }
 
 
-    private String validate(File file) {
-        String code = readFile(file);
+    private String validate(String code) {
         // System.out.println(code);
         String result = parser.validateCode(code);
         return result;
     }
 
-    private String readFile(File file) {
+    private String [] readFile(File file) {
         ArrayList<String> lines = new ArrayList<>();
         try {
             Scanner scanner = new Scanner(file);
@@ -114,7 +148,7 @@ public class GUI extends JFrame {
         catch (Exception e) {
             e.printStackTrace();
         }
-        return FileProcessor.processFileContent(lines.toArray(new String[0]));
+        return lines.toArray(new String[0]);
     }
 
 }

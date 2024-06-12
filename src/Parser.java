@@ -149,7 +149,7 @@ public class Parser {
         }
         return first;
     }
-
+    
     private Set<String> findFirstHelper(String productionString){
         Set<String> first = new HashSet<>();
         String [] parts = productionString.split(" ");
@@ -432,7 +432,7 @@ public class Parser {
         }
     }
 
-    private int lineNo = 1;
+    public int lineNo = 1;
 
     //returns first token from the list of tokes and increments the line number if new line found
     private String getToken(List<String> tokens){
@@ -458,7 +458,7 @@ public class Parser {
         // }
         Stack<String> parsingStack = new Stack<>();
         parsingStack.push("$");
-        parsingStack.push(startSymbol); //TODO: check starting symbol
+        parsingStack.push(startSymbol);
         System.out.println(parsingStack);
         while (!parsingStack.empty()){
             System.out.println(parsingStack);
@@ -467,15 +467,15 @@ public class Parser {
             System.out.println(getToken(tokens));
             if (isTerminal(top)){
                 if (top.equals("$")){
-                    if (tokens.isEmpty()){
-                        return "Code is valid because parsing stack is empty!"; //TODO: check this correct?
+                    if (!tokens.isEmpty()){
+                        return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid because parsing stack is empty!"; //TODO: check this correct?
                     }
                     else {
-                        return "Code is invalid! Expected end of code but found: " + getToken(tokens) + " left!";
+                        return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! Expected end of code but found: " + getToken(tokens) + " left!";
                     }
                 }
                 if (tokens.isEmpty()){
-                    return "Code is invalid! Expected end of code but found: $ missing!";
+                    return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! Expected end of code but found: '$' missing!";
                 }
                 String token = getToken(tokens);
                 if (top.equals(token)){
@@ -486,7 +486,7 @@ public class Parser {
                         tokens.remove(0);
                     }
                     else {
-                        return "Code is invalid! Expected a name but found: " + token + " which is not a valid name!";
+                        return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! Expected a name but found: \"" + token + "\"" + " which is not a valid name!";
                     }
                 }
                 else if (top.equals("integer-value")){
@@ -494,7 +494,7 @@ public class Parser {
                         tokens.remove(0);
                     }
                     else {
-                        return "Code is invalid! Expected integer but found: " + token;
+                        return "Error at line " + lineNo +": Unexpected Token: \"" +getToken(tokens) + "\"\nCode is invalid! Expected integer but found: \"" + token + "\"!";
                     }
                 }
                 else if (top.equals("real-value")){
@@ -502,22 +502,22 @@ public class Parser {
                         tokens.remove(0);
                     }
                     else {
-                        return "Code is invalid! Expected double but found: " + token;
+                        return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! Expected double but found: \"" + token + "\"!";
                     }
                 }
                 else {
-                    return "Error at line " + lineNo +": " + code.split("!ln")[lineNo-1] + "\nCode is invalid! Expected: \"" + top + "\" but found: \"" + token + "\"!";
+                    return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! Expected: \"" + top + "\" but found: \"" + token + "\"!";
                 }
             }
             else if (isNonTerminal(top)){
                 if (!parsingTable.containsKey(top)){
-                    return "Code is invalid! Could not find non terminal in the parsing table keys!";
+                    return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! \"" + top + "\" is not a valid non terminal!";
                 }
                 if (parsingTable.get(top).keySet().contains(getToken(tokens)) == false){
                     if (replaceVar(tokens, parsingTable.get(top).keySet())){
                         System.out.println("Replaced variable!" + " " + getToken(tokens));
                     }
-                    else return "Error at line " + lineNo +": " + code.split("!ln")[lineNo-1] + "\nCode is invalid! \"" + top + "\" does not have a production for: \"" + getToken(tokens) +"\"!";
+                    else return "Error at line " + lineNo +": Unexpected Token: \"" + getToken(tokens) + "\"\nCode is invalid! Expected instance of: \"" + top + "\" but found: \"" + getToken(tokens) + "\"!";
                 }
                 List<String> productions = parsingTable.get(top).get(getToken(tokens));
                 if (productions.size() > 1){
@@ -533,7 +533,8 @@ public class Parser {
         }
         return null;
     }
-
+    //Replaces an int value with a var terminal known to the parsing table
+    // returns false if non of the keys have production rule that contains variable 
     private boolean replaceVar(List<String> tokens, Set<String> productionKeys){
         String var = tokens.get(0);
         if (productionKeys.contains("name") && checkName(var)){
